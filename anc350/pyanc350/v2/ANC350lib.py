@@ -63,9 +63,40 @@ def checkError(code,func,args):
 
 #import dll
 import os
-dll_path = os.path.abspath("C:/Users/user/Desktop/anc350_test/anc350v2.dll")
-anc350v2 = ctypes.WinDLL(dll_path)
+import platform
+import ctypes
 
+class DummyFunc:
+    def __init__(self, name):
+        self._name = name
+        self.argtypes = []
+        self.restype = None
+    def __call__(self, *args, **kwargs):
+        # 呼ばれても何もしない（一応警告だけ出す）
+        print(f"[Warning] 存在しない関数が呼ばれました: {self._name}")
+        return 0
+
+class LinuxLibWrapper:
+    def __init__(self, lib):
+        self._lib = lib
+        
+    def __getattr__(self, name):
+        # 1. Windows特有の装飾を外す
+        if name.startswith('_') and '@' in name:
+            name = name.lstrip('_').split('@')[0]
+        
+        # 2. Linuxの.so内に存在すればそれを返し、無ければダミーを返す
+        if hasattr(self._lib, name):
+            return getattr(self._lib, name)
+        else:
+            return DummyFunc(name)
+
+if platform.system() == 'Windows':
+    dll_path = os.path.abspath("C:/Users/user/Desktop/anc350_test/anc350v2.dll")
+    anc350v2 = ctypes.WinDLL(dll_path)
+else:
+    dll_path = os.path.abspath("/app/anc350/libhvpositionerv2.so")
+    anc350v2 = LinuxLibWrapper(ctypes.CDLL(dll_path))
 
 #creates alias for c_int as "Int32" (I really don't know why)
 Int32 = ctypes.c_int
