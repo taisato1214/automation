@@ -1,0 +1,91 @@
+; Installation INF for the Cypress Generic USB Driver for Windows 2000/XP
+;
+
+[Version]
+Signature="$CHICAGO$"
+Class=USB
+ClassGUID={36FC9E60-C465-11CF-8056-444553540000}
+provider=%CYPRESS%
+;---Uncomment and complete below to support WHQL submission---;
+;CatalogFile=cyusb.cat
+;DriverVer=mm/dd/yyyy,x.y.v.z
+;-------------------------------------------------------------;
+
+[SourceDisksNames]
+1=%CYUSB_INSTALL%,,,
+
+[SourceDisksFiles]
+ncore_usb.sys = 1
+CyUsb.spt = 1
+
+[Manufacturer]
+%MfgName%=Cypress
+
+[Cypress]
+;%VID_VVVV&PID_PPPP.DeviceDesc%=CyUsb, USB\VID_VVVV&PID_PPPP
+%VID_16C0&PID_055B.DeviceDesc%=CyUsb, USB\VID_16C0&PID_055B
+
+;[PreCopySection]
+;HKR,,NoSetupUI,,1
+
+[DestinationDirs]
+CyUsb.Files.Ext = 10,System32\Drivers
+;-----Uncomment below to support script file processing-----;
+;CyUsb.Files.Spt = 10,System32\CyUsb
+;------------------------------------------------------------;
+
+
+[CyUsb.NT]
+CopyFiles=CyUsb.Files.Ext
+;-----Uncomment below to support script file processing-----;
+;CopyFiles=CyUsb.Files.Spt
+;------------------------------------------------------------;
+AddReg=CyUsb.AddReg
+
+[CyUsb.NT.HW]
+AddReg=CyUsb.AddReg.Guid
+
+[CyUsb.NT.Services]
+Addservice = CyUsb, 0x00000002, CyUsb.AddService
+
+[CyUsb.AddService]
+DisplayName    = %CyUsb.SvcDesc%
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 3                  ; SERVICE_DEMAND_START
+ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %10%\System32\Drivers\ncore_usb.sys
+LoadOrderGroup = Base
+ 
+[CyUsb.AddReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,ncore_usb.sys
+
+[CyUsb.Files.Ext]
+ncore_usb.sys
+
+;-----Uncomment below to support script file processing-----;
+;[CyUsb.Files.Spt]
+;CyUsb.spt
+;------------------------------------------------------------;
+
+[CyUsb.AddReg.Guid]
+HKR,,DriverGUID,,%CyUsb.GUID%
+;-----Uncomment below to support script file processing-----;
+;HKR,,DriverEXECSCRIPT,,%CyUsb.EXECSCRIPT%
+;------------------------------------------------------------;
+
+
+;---------------------------------------------------------------;
+
+[Strings]
+CYPRESS="n-hands"
+MfgName="n-hands"
+CYUSB_INSTALL="N-HANDS USB Driver Installation Disk"
+VID_16C0&PID_055B.DeviceDesc="n-hands ncore usb device"
+CyUsb.SvcDesc="n-hands ncore usb driver"
+;------------Replace GUID below with custom GUID-------------;
+CyUsb.GUID="{3B8EEFEB-E80D-4f35-A72A-55AFA2864155}"
+;------------------------------------------------------------;
+;-----Uncomment below to support script file processing-----;
+;CyUsb.EXECSCRIPT="\systemroot\system32\CyUsb\CyUsb.spt"
+;------------------------------------------------------------;

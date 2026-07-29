@@ -1,0 +1,144 @@
+<Experiment Name="ANC350 Trigger Settings" ScreenX="510" ScreenY="1">
+  <Tab Name="ANC350 Trigger Settings" Icon="debug.xpm">
+	<Widget Type="Box" Caption=""  Style="Flat"       Height="10"                        X="0" Y="0">
+      <Widget Type="Box" Style="Flat"                                                    X="0" Y="0" Width="3" >
+        <Widget Type="Combo" Caption="Trigger In Mode"                                   X="0" Y="0" Address="0x585" Index="0" Choices="Disable:Quadrature:Coarse" Persist="0" />
+        <Widget Type="Combo" Caption="Trigger Out Mode"                                  X="1" Y="0" Address="0x586" Index="0" Choices="Disable:Position:Quadrature:IcHaus" Persist="0" />
+        <Widget Type="Box" Style="Flat"                                                  X="2" Y="0" Width="10" />
+      </Widget>
+      
+	  <Widget Type="Box" Caption="Trigger 1"                                             X="0" Y="1"  >
+		<Widget Type="Xedit"   Caption="Position low"                                              Address="0x530" Index="0"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="1" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x535" Index="0" />
+		</Widget>
+		
+		<Widget Type="Xedit"   Caption="Position high"                                             Address="0x531" Index="0"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="2" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x535" Index="0" />
+		</Widget>
+		<Widget Type="Combo"  Caption="Polarity"                                                   Address="0x532" Index="0"  Choices="Low=0:High" Persist="0" X="0" Y="3" />
+		
+		<Widget Type="Combo"  Caption="Axis"                                                       Address="0x533" Index="0"  Choices="1=0:2:3:4:5:6" Persist="0" X="0" Y="4" />
+		
+		<Widget Type="Xedit"   Caption="Epsilon"                                                   Address="0x534" Index="0"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="5" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x535" Index="0" />
+		</Widget>
+	  </Widget>
+	  
+	  <Widget Type="Box" Caption="Trigger 2"                                             X="1" Y="1"  >
+		<Widget Type="Xedit"   Caption="Position low"                                              Address="0x530" Index="1"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="1" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x535" Index="1" />
+		</Widget>
+		
+		<Widget Type="Xedit"   Caption="Position high"                                             Address="0x531" Index="1"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="2" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x535" Index="1" />
+		</Widget>
+		<Widget Type="Combo"  Caption="Polarity"                                                   Address="0x532" Index="1"  Choices="Low=0:High" Persist="0" X="0" Y="3" />
+		
+		<Widget Type="Combo"  Caption="Axis"                                                       Address="0x533" Index="1"  Choices="1=0:2:3:4:5:6" Persist="0" X="0" Y="4" />
+		
+		<Widget Type="Xedit"   Caption="Epsilon"                                                   Address="0x534" Index="1"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="5" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x535" Index="1" />
+		</Widget>
+	  </Widget>
+	  
+	  <Widget Type="Box" Caption="Trigger 3"                                             X="2" Y="1"  >
+		<Widget Type="Xedit"   Caption="Position low"                                              Address="0x530" Index="2"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="1" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x535" Index="2" />
+		</Widget>
+		
+		<Widget Type="Xedit"   Caption="Position high"                                             Address="0x531" Index="2"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="2" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x535" Index="2" />
+		</Widget>
+		<Widget Type="Combo"  Caption="Polarity"                                                   Address="0x532" Index="2"  Choices="Low=0:High" Persist="0" X="0" Y="3" />
+		
+		<Widget Type="Combo"  Caption="Axis"                                                       Address="0x533" Index="2"  Choices="1=0:2:3:4:5:6" Persist="0" X="0" Y="4" />
+		
+		<Widget Type="Xedit"   Caption="Epsilon"                                                   Address="0x534" Index="2"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="5" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x535" Index="2" />
+		</Widget>
+	  </Widget>
+	  
+	  <Widget Type="Box" Caption="Trigger 4"                                             X="0" Y="2"  >
+		<Widget Type="Xedit"   Caption="Position low"                                              Address="0x530" Index="3"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="1" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x535" Index="3" />
+		</Widget>
+		
+		<Widget Type="Xedit"   Caption="Position high"                                             Address="0x531" Index="3"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="2" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x535" Index="3" />
+		</Widget>
+		<Widget Type="Combo"  Caption="Polarity"                                                   Address="0x532" Index="3"  Choices="Low=0:High" Persist="0" X="0" Y="3" />
+		
+		<Widget Type="Combo"  Caption="Axis"                                                       Address="0x533" Index="3"  Choices="1=0:2:3:4:5:6" Persist="0" X="0" Y="4" />
+		
+		<Widget Type="Xedit"   Caption="Epsilon"                                                   Address="0x534" Index="3"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="5" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x535" Index="3" />
+		</Widget>
+	  </Widget>
+	  
+	  <Widget Type="Box" Caption="Trigger 5"                                             X="1" Y="2"  >
+		<Widget Type="Xedit"   Caption="Position low"                                              Address="0x530" Index="4"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="1" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x535" Index="4" />
+		</Widget>
+		
+		<Widget Type="Xedit"   Caption="Position high"                                             Address="0x531" Index="4"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="2" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x535" Index="4" />
+		</Widget>
+		<Widget Type="Combo"  Caption="Polarity"                                                   Address="0x532" Index="4"  Choices="Low=0:High" Persist="0" X="0" Y="3" />
+		
+		<Widget Type="Combo"  Caption="Axis"                                                       Address="0x533" Index="4"  Choices="1=0:2:3:4:5:6" Persist="0" X="0" Y="4" />
+		
+		<Widget Type="Xedit"   Caption="Epsilon"                                                   Address="0x534" Index="4"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="5" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x535" Index="4" />
+		</Widget>
+	  </Widget>
+	  
+	  <Widget Type="Box" Caption="Trigger 6"                                             X="2" Y="2"  >
+		<Widget Type="Xedit"   Caption="Position low"                                              Address="0x530" Index="5"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="1" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x535" Index="5" />
+		</Widget>
+		
+		<Widget Type="Xedit"   Caption="Position high"                                             Address="0x531" Index="5"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="2" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x535" Index="5" />
+		</Widget>
+		<Widget Type="Combo"  Caption="Polarity"                                                   Address="0x532" Index="5"  Choices="Low=0:High" Persist="0" X="0" Y="3" />
+		
+		<Widget Type="Combo"  Caption="Axis"                                                       Address="0x533" Index="5"  Choices="1=0:2:3:4:5:6" Persist="0" X="0" Y="4" />
+		
+		<Widget Type="Xedit"   Caption="Epsilon"                                                   Address="0x534" Index="5"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="5" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x535" Index="5" />
+		</Widget>
+	  </Widget>
+      
+      <Widget Type="Box" Caption="Quadrature 1"                                         X="0" Y="3" >
+        <Widget Type="Combo"  Caption="Axis"                                                       Address="0x56E" Index="0"  Choices="1=0:2:3:4:5:6" Persist="0" X="0" Y="0" />
+		<Widget Type="Xedit"   Caption="Input Resolution"                                              Address="0x56F" Index="0"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="1" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x571" Index="0" />
+		</Widget>
+		<Widget Type="Xedit"   Caption="Output Resolution"                                             Address="0x570" Index="0"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="2" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x571" Index="0" />
+		</Widget>
+      </Widget>
+      
+      <Widget Type="Box" Caption="Quadrature 2"                                         X="1" Y="3" >
+        <Widget Type="Combo"  Caption="Axis"                                                       Address="0x56E" Index="1"  Choices="1=0:2:3:4:5:6" Persist="0" X="0" Y="0" />
+		<Widget Type="Xedit"   Caption="Input Resolution"                                              Address="0x56F" Index="1"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="1" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x571" Index="1" />
+		</Widget>
+		<Widget Type="Xedit"   Caption="Output Resolution"                                             Address="0x570" Index="1"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="2" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x571" Index="1" />
+		</Widget>
+      </Widget>
+      
+      <Widget Type="Box" Caption="Quadrature 3"                                         X="2" Y="3" >
+        <Widget Type="Combo"  Caption="Axis"                                                       Address="0x56E" Index="2"  Choices="1=0:2:3:4:5:6" Persist="0" X="0" Y="0" />
+		<Widget Type="Xedit"   Caption="Input Resolution"                                              Address="0x56F" Index="2"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="1" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x571" Index="2" />
+		</Widget>
+		<Widget Type="Xedit"   Caption="Output Resolution"                                             Address="0x570" Index="2"  Display="Float" Unit="um" Prefix="X" Scale="1000." Accuracy="10"    X="0" Y="2" Persist="0" >
+			<Connect Name="Unit"        							                               Address="0x571" Index="2" />
+		</Widget>
+      </Widget>
+
+	</Widget>
+  </Tab>
+</Experiment>

@@ -1,0 +1,21 @@
+<Experiment Name="ANC350 Trigger Settings" ScreenX="510" ScreenY="1">
+  <Tab Name="ANC350 Trigger Settings" Icon="debug.xpm">
+	<Widget Type="Box" Caption=""  Style="Flat"       Height="10"                        X="0" Y="0">
+	  <Widget Type="Box" Caption="Position Input 1"                                                X="0" Y="0"  >
+        <Widget Type="Xedit" FixPrefix="User"   Caption="Stepsize"                                 X="0" Y="0" Address="0x056F" Index="0" Unit="um" Prefix="X" Display="Float" Scale="1000."  Persist="0" Accuracy="10" >
+            <Connect Name="Unit"        							                                           Address="0x41D"            Index="0" />
+        </Widget>
+      
+        <Widget Type="Combo"  Caption="Select"                                                     X="0" Y="1" Address="0x56E" Index="0" Choices="Input 1:Input 2:Input 3:None=-1"            Persist="0" />
+	  </Widget>
+	  
+	  <Widget Type="Box" Caption="Position Output 1"                                               X="1" Y="0"  >
+        <Widget Type="Xedit" FixPrefix="User"   Caption="Stepsize"                                 X="0" Y="0" Address="0x0571" Index="0" Unit="um" Prefix="X" Display="Float" Scale="1000."  Persist="0" Accuracy="10" >
+            <Connect Name="Unit"        							                                           Address="0x41D"            Index="0" />
+        </Widget>
+      
+        <Widget Type="Combo"  Caption="Select"                                                     X="0" Y="1" Address="0x570" Index="0" Choices="Input 1:Input 2:Input 3:None=-1"            Persist="0" />
+      </Widget>
+	</Widget>
+  </Tab>
+</Experiment>

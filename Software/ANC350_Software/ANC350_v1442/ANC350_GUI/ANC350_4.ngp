@@ -1,0 +1,12 @@
+
+<Profile Height="712" Width="425" X="5" Y="24">
+  <Panel File="anc350_global.ngc"/>
+  <Panel File="anc350_axis1.ngc"/>
+  <Panel File="anc350_axis2.ngc"/>
+  <Panel File="anc350_axis3.ngc"/>
+  <Panel File="anc350_axis4.ngc"/>
+
+  <Persistence>
+  </Persistence>
+  <Settings/>
+</Profile>

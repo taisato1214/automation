@@ -1,0 +1,25 @@
+Installation of the ANC350 user library "hvpostionerv2" for Linux
+=================================================================
+
+1. The library has been built and tested under Ubuntu 10.04. It should also
+   run with other Linux distributions - but very old distributions may not
+   have the recent versions of standard libraries used.
+
+2. Extract the directory tree to a place of your choice.
+
+3. Check if the "version links" in subdirectory lib/ are valid.
+   If not, or if you are not sure, create them:
+     cd lib
+     ln -s libhvpositionerv2.so.1.0.1 libhvpositionerv2.so.1
+     ln -s libhvpositionerv2.so.1.0.1 libhvpositionerv2.so
+     ln -s libnhconnect.so.1.0.0      libnhconnect.so.1
+     ln -s libnhconnect.so.1.0.0      libnhconnect.so
+
+4. Develop your application based on example0 in examples/.
+   Link against the libraries in lib/ and pthread.
+
+5. Before starting, make sure that the loader can find the shared libraries. E.g.:
+   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<PlaceOfChoice>/positionerv2/lib
+
+6. After starting, the program should automatically find all ANC350 devices
+   that are reachable in the LAN.

@@ -1,0 +1,13 @@
+<Panel Name="ANC350 Global Settings" Icon="debug.xpm" ScreenX="1" ScreenY="1">
+		<Widget Type="Xedit"  Caption="Static Voltage"                  X="0" Y="2"  Address="0x526" Index="0"     Unit="V"   Prefix=" " FixPrefix="User"      Persist="0" Display="Float" Min="0.0" Max="2.048" Accuracy="6" Scale="1000." />
+		<Widget Type="Box"    Style="Flat"                              X="0" Y="3"  />
+		<Widget Type="Button" Caption="Save Settings"                   X="0" Y="4"  Address="0x50c" Index="0"     Toggle="0" Data="0x1234" />
+		<Widget Type="Button" Caption="Clear Settings"                  X="0" Y="5"  Address="0x50c" Index="0"     Toggle="0" Data="0x4321" />
+		<Widget Type="Led"    Caption="Flash Status"                    X="0" Y="6"  Address="0x50C" Index="0"     Grey="0" Red="-1"  />
+		
+		<Widget Type="Box"    Caption=""                                X="0" Y="7"   Style="Flat"  />
+		<Widget Type="Led"    Caption="Temperature Status"              X="0" Y="8"  Address="0x560" Index="0"     Green="-1" Red="0"  />
+		
+        <Widget Type="Box"   Caption=""                                 X="0" Y="9"   Style="Flat"  Height="10"/>
+		<Widget Type="Box"   Caption=""                                 X="1" Y="0"   Style="Flat"  Width="10"/>
+</Panel>

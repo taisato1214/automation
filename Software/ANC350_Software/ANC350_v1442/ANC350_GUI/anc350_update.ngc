@@ -1,0 +1,44 @@
+<Experiment Name="Debug Control" ScreenX="510" ScreenY="1">
+  <Tab Name="Firmware Update" Icon="debug.xpm">
+
+  
+  <Widget Type="Box" Caption="Firmware Update"              X="0" Y="7"  >
+	  <Widget Type="FirmwareUpdate" Caption="Firmware Update"  Address="0x173" X="0" Y="5" Width="1" >
+		<Connect Name="FirmwareUpdateEnable"  Address="0x170" Index="0" />
+		<Connect Name="FirmwareDspUpdate"     Address="0x171" Index="0" />
+		<Connect Name="FirmwareFpgaUpdate"    Address="0x172" Index="0" />
+        <Connect Name="Dsp1Version"           Address="0x111"  />
+        <Connect Name="Dsp2Version"           Address="0x113"  />
+        <Connect Name="Dsp3Version"           Address="0x115"  />
+        <Connect Name="Dsp1Product"           Address="0x112"  />
+        <Connect Name="Dsp2Product"           Address="0x114"  />
+        <Connect Name="Dsp3Product"           Address="0x116"  />
+        <Connect Name="Fpga1Version"          Address="0x117"  />
+        <Connect Name="Fpga2Version"          Address="0x119"  />
+        <Connect Name="Fpga3Version"          Address="0x11B"  />
+        <Connect Name="Fpga1Product"          Address="0x118"  />
+        <Connect Name="Fpga2Product"          Address="0x11A"  />
+        <Connect Name="Fpga3Product"          Address="0x11C"  />
+        
+        <Connect Name="Dsp1FlashedVersion"    Address="0x240"  />
+        <Connect Name="Dsp2FlashedVersion"    Address="0x242"  />
+        <Connect Name="Dsp3FlashedVersion"    Address="0x244"  />
+        <Connect Name="Fpga1FlashedVersion"   Address="0x246"  />
+        <Connect Name="Fpga2FlashedVersion"   Address="0x248"  />
+        <Connect Name="Fpga3FlashedVersion"   Address="0x24A"  />
+        <Connect Name="Dsp1FlashedProduct"    Address="0x241"  />
+        <Connect Name="Dsp2FlashedProduct"    Address="0x243"  />
+        <Connect Name="Dsp3FlashedProduct"    Address="0x245"  />
+        <Connect Name="Fpga1FlashedProduct"   Address="0x247"  />
+        <Connect Name="Fpga2FlashedProduct"   Address="0x249"  />
+        <Connect Name="Fpga3FlashedProduct"   Address="0x24B"  />
+        
+        
+	  </Widget>
+      
+      <Widget Type="Button" Caption="Get Version Information"  Address="0x16C" X="0" Y="6" />
+      
+  </Widget>
+
+</Tab>
+</Experiment>

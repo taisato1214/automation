@@ -1,0 +1,30 @@
+<Experiment Name="ANC350 Control" ScreenX="1" ScreenY="1">
+  <Tab Name="ANC350 Scanner Axis 4" Icon="debug.xpm" Channels="User 1:User 2:User 3:User 4:User 5:User 6:USer 7:User 8:User 9">
+
+    <Widget Type="Box" Caption="Scanner Axis 4"              X="0" Y="0"  >
+		<Widget Type="Xedit"  Caption="DC Level"             Address="0x514" Index="3" Unit="V"  FixPrefix="User" Prefix=" "     X="0" Y="1"  Persist="0" Display="Float" Min="0"  Max="140" Scale="1000." Accuracy="6"/>
+		<Widget Type="Led"    Caption="Output Enable"        Address="0x447" Index="3"                                           X="0" Y="2"  Grey="-1"  Green="1"   />			
+		<Widget Type="Check"  Caption="Bandwith Limit"       Address="0x568" Index="3"                                           X="0" Y="3"  Persist="0" />
+		
+		<Widget Type="Check"  Caption="DC In"                Address="0x561" Index="3"                                           X="0" Y="4"  Persist="0" />
+		<Widget Type="Check"  Caption="Int"                  Address="0x563" Index="3"                                           X="0" Y="5"  Persist="0" />
+		
+		<Widget Type="ParamLoad" Caption="Load Actor Profile"           ParamIndex="3"                                           X="0" Y="6"  Width="4"  />
+		
+		
+		<Widget Type="Box" Style="Flat" X="5" Y="1" Width="1" />
+		<Widget Type="Box" Style="Flat" X="0" Y="7" Width="1" Height="10" />
+        
+    </Widget>  
+	
+	<Widget Type="Box"   Caption="Capacity Measurement"               X="0"   Y="5"  Style="Box"  >
+		<Widget Type="Button" Caption="Start"                         X="0"   Y="0"	 Address="0x51E" Index="3"  Data="1" Toggle="0"   />
+		<Widget Type="Label"  Caption="Capacity:"                     X="1"   Y="0"  Align="VCenter" />
+		<Widget Type="Xedit"  Caption=""                              X="2"   Y="0"  Address="0x569" Index="3"  Align="VCenter" Unit="F"  Prefix="u"  FixPrefix="User" ReadOnly="1"  Persist="0" Display="Float" Scale="1000." Accuracy="6" />
+		<Widget Type="Box"    Style="Flat"                            X="4"   Y="0"  Width="2" />
+	</Widget>
+	
+	<Widget Type="Box"   Caption=""               X="0"   Y="6"  Style="Flat" Height="10" />
+	
+	</Tab>
+</Experiment>
