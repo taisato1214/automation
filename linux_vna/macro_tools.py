@@ -1,12 +1,10 @@
 import datetime
 import os
 import pyvisa
-import statistics
 import time
 import Switchcontrol
 import vna_tools
 import find_resonance
-
 
 def read_position_stats(atc, n=10, interval=0.05):
   """axis 1 と axis 2 のポジションを n 回読み取って平均と標準偏差を返す。
@@ -122,3 +120,76 @@ def run_scan(atc, mode="TM110", sstep=10, nstep=10):
   znb.close()
   rm.close()
   print("\nScan Finished. Log saved to:", output_file)
+
+def set_target_freq(atc, mode="TM110"):
+
+  mode = mode.upper() # 大文字に自動変換
+
+  print("Automatic VNA Measurement")
+
+  # スイッチ切替
+  Switchcontrol.set_switch("VNA", mode)
+
+  # VNA接続
+  rm = pyvisa.ResourceManager('@py')
+  resource_string = 'TCPIP0::192.168.12.4::inst0::INSTR'
+  try:
+    znb = vna_tools.get_vna_resource(rm, resource_string)
+  except Exception as e:
+    print("Connection Failed:", e)
+    return
+
+  # VNA設定
+  vna_tools.setup_vna(znb)
+
+  # 共鳴周波数を取得
+  if mode == "TM110":
+    min_freq = vna_tools.find_min_freq(znb, 2, "Trc4", threshold=0.5)
+    target_freq = 1.8974e9
+  else:
+    min_freq = vna_tools.find_min_freq(znb, 4, "Trc8", threshold=0.5)
+    target_freq = 2.565e9
+
+  if min_freq is None:
+    print("共鳴周波数が見つかりませんでした。終了します。")
+    znb.close()
+    rm.close()
+    return
+
+  print(f"Current resonance freq: {min_freq / 1e6:.6f} MHz")
+  print(f"Target freq:            {target_freq / 1e6:.6f} MHz")
+
+  # 必要ステップ数を計算
+  delta_freq = target_freq - min_freq
+  slope = 3.1e-6  # step/Hz
+  step = int(round(slope * delta_freq)) # 四捨五入して整数型
+  print(f"\nFrequency difference: {delta_freq / 1e6:.4f} MHz")
+  print(f"Estimated steps needed: {step}")
+
+  # Piezoを移動
+  pos1_mean, pos1_err, pos2_mean, pos2_err = read_position_stats(atc, n=10, interval=0.05)
+  print(f"\nInitial Piezo position: Pos1: {pos1_mean:.4f}±{pos1_err:.4f} V, Pos2: {pos2_mean:.4f}±{pos2_err:.4f} V")
+  time.sleep(0.1)
+
+  atc.move_by_steps(1, step, 0.01)
+  time.sleep(0.1)
+
+  pos1_mean, pos1_err, pos2_mean, pos2_err = read_position_stats(atc, n=10, interval=0.05)
+  print(f"\nInitial Piezo position: Pos1: {pos1_mean:.4f}±{pos1_err:.4f} V, Pos2: {pos2_mean:.4f}±{pos2_err:.4f} V")
+
+  # 移動後の共鳴周波数を確認
+  print("\nChecking resonance frequency after move...")
+  if mode == "TM110":
+    new_freq = vna_tools.find_min_freq(znb, 2, "Trc4", threshold=0.5)
+  else:
+    new_freq = vna_tools.find_min_freq(znb, 4, "Trc8", threshold=0.5)
+
+  if new_freq is not None:
+    print(f"New resonance freq:  {new_freq / 1e6:.6f} MHz")
+    print(f"Remaining offset:    {(target_freq - new_freq) / 1e6:.4f} MHz")
+  else:
+    print("移動後の共鳴周波数が見つかりませんでした。")
+
+  # 終了処理
+  znb.close()
+  rm.close()

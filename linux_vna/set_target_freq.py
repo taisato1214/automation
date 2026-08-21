@@ -1,94 +1,93 @@
-import datetime
-import os
-import pyvisa
+import sys
 import time
+import pyvisa
 import Switchcontrol
 import vna_tools
-import find_resonance
 
-def set_target_freq(atc, mode="TM110", t_freq=1.896774):
-  mode = mode.upper()
-  print(f"Automatic VNA Measurement ({mode})")
+def set_target_freq(atc, mode="TM110"):
 
-  # スイッチ切替
-  Switchcontrol.set_switch("VNA", mode)
+    mode = mode.upper()
 
-  # VNA接続
-  rm = pyvisa.ResourceManager('@py')
-  resource_string = 'TCPIP0::192.168.12.4::inst0::INSTR'
-  try:
-    znb = vna_tools.get_vna_resource(rm, resource_string)
-  except Exception as e:
-    print("Connection Failed:", e)
-    return
+    print("Automatic VNA Measurement")
 
-  vna_tools.setup_vna(znb)
+    # スイッチ切替
+    Switchcontrol.set_switch("VNA", mode)
 
-  # --- 保存先ディレクトリの作成 (data/年月日/Exp#) ---
-  now_dt = datetime.datetime.now()
-  date_dir = now_dt.strftime("%Y%m%d")
-  
-  # 既存の実験フォルダ内を探すか、新しいExp番号のフォルダを決定する
-  base_output_dir = f"./data/{date_dir}"
-  if not os.path.exists(base_output_dir):
-    os.makedirs(base_output_dir)
+    # VNA接続
+    rm = pyvisa.ResourceManager('@py')
+    resource_string = 'TCPIP0::192.168.12.4::inst0::INSTR'
+    try:
+        znb = vna_tools.get_vna_resource(rm, resource_string)
+    except Exception as e:
+        print("Connection Failed:", e)
+        return
 
-  # Run# の採番 (既存の Run フォルダの数を数えて次の番号にする)
-  existing_exps = [d for d in os.listdir(base_output_dir) if d.startswith("Run")]
-  exp_num = len(existing_exps) + 1
-  output_file = f"{base_output_dir}/Run{exp_num}.txt"
+    # VNA設定
+    vna_tools.setup_vna(znb)
 
-  print(f"Log will be saved to: {output_file}")
-  
-  with open(output_file, "w", encoding="utf-8") as f:
-    f.write("Step_Count,Position,Resonance_f0_GHz\n")
+    # 共鳴周波数を取得
+    if mode == "TM110":
+        min_freq = vna_tools.find_min_freq(znb, 2, "Trc4", threshold=0.5)
+        target_freq = 1.8974e9
+    else:
+        min_freq = vna_tools.find_min_freq(znb, 4, "Trc8", threshold=0.5)
+        target_freq = 2.565e9
 
-    # 行き
-    for i in range(1, nstep + 1):
-        print(f"\n--- Forward Scan {i}/{nstep} ---")
+    if min_freq is None:
+        print("共鳴周波数が見つかりませんでした。終了します。")
+        znb.close()
+        rm.close()
+        return
 
-        atc.move_by_steps(1, sstep, 0.01)   # +方向, TM110fre.は-
-        time.sleep(0.1)
-        pos = atc.get_position(1)
+    print(f"Current resonance freq: {min_freq / 1e6:.6f} MHz")
+    print(f"Target freq:            {target_freq / 1e6:.6f} MHz")
 
-        csv_path = vna_tools.measure_and_save(znb, f"{mode}_F{i}")
-        results = find_resonance.analyze(csv_path)
+    # 必要ステップ数を計算
+    delta_freq = target_freq - min_freq
+    slope = 3.1e-6  # step/Hz
+    step = int(round(slope * delta_freq)) # 四捨五入して整数型
+    print(f"\nFrequency difference: {delta_freq / 1e6:.4f} MHz")
+    print(f"Estimated steps needed: {step}")
 
-        if mode == "TM110":
-            result = results["110_Narrow"]
-        else:
-            result = results["210_Narrow"]
+    # Piezoを移動
+    pos = atc.get_position(1)
+    print(f"\nInitial Piezo position: {pos} V")
+    time.sleep(0.1)
 
-        f0 = result["f0"]
+    atc.move_by_steps(1, step, 0.01)
+    time.sleep(0.1)
 
-        print(f"Forward Step: {i}, Position: {pos}, f0: {f0:.6f} GHz")
-        f.write(f"{i},{pos},{f0:.6f}\n")
-        f.flush()
+    pos = atc.get_position(1)
+    print(f"Final Piezo position:   {pos} V")
+
+    # 移動後の共鳴周波数を確認
+    print("\nChecking resonance frequency after move...")
+    if mode == "TM110":
+        new_freq = vna_tools.find_min_freq(znb, 2, "Trc4", threshold=0.5)
+    else:
+        new_freq = vna_tools.find_min_freq(znb, 4, "Trc8", threshold=0.5)
+
+    if new_freq is not None:
+        print(f"New resonance freq:  {new_freq / 1e6:.6f} MHz")
+        print(f"Remaining offset:    {(target_freq - new_freq) / 1e6:.4f} MHz")
+    else:
+        print("移動後の共鳴周波数が見つかりませんでした。")
+
+    # 終了処理
+    znb.close()
+    rm.close()
 
 
-    # 帰り
-    for i in range(nstep, 0, -1):
-        print(f"\n--- Backward Scan {nstep-i+1}/{nstep} ---")
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage:")
+        print("  python set_target_freq.py TM110")
+        print("  python set_target_freq.py TM210")
+        sys.exit(1)
 
-        atc.move_by_steps(1, -sstep, 0.01)   # -方向, TM110fre.は+
-        time.sleep(0.1)
-        pos = atc.get_position(1)
+    mode_arg = sys.argv[1].upper()
+    print("Error: atc controller must be initialized before calling set_target_freq().")
+    print("Please call set_target_freq(atc, mode) from your main script.")
+    sys.exit(1)
 
-        csv_path = vna_tools.measure_and_save(znb, f"{mode}_B{i}")
-        results = find_resonance.analyze(csv_path)
 
-        if mode == "TM110":
-            result = results["110_Narrow"]
-        else:
-            result = results["210_Narrow"]
-
-        f0 = result["f0"]
-
-        print(f"Backward Step: {i}, Position: {pos}, f0: {f0:.6f} GHz")
-        f.write(f"{i},{pos},{f0:.6f}\n")
-        f.flush()
-
-  # 終了処理
-  znb.close()
-  rm.close()
-  print("\nScan Finished. Log saved to:", output_file)
