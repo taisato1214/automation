@@ -70,7 +70,10 @@ def run_scan(atc, mode="TM110", sstep=10, nstep=10):
     if d.startswith("Run") and d[3:].split(".")[0].isdigit()
   ]
   exp_num = max(existing_runs) + 1 if existing_runs else 1
-  output_file = f"{base_output_dir}/Run{exp_num}.txt"
+  run_name = f"Run{exp_num:06d}"
+  output_file = f"{base_output_dir}/{run_name}.txt"
+
+  os.makedirs(f"{base_output_dir}/{run_name}", exist_ok=True)
 
   print(f"Log will be saved to: {output_file}")
   
@@ -86,7 +89,7 @@ def run_scan(atc, mode="TM110", sstep=10, nstep=10):
         time.sleep(0.1)
         pos1_mean, pos1_err, pos2_mean, pos2_err = read_position_stats(atc, n=10, interval=0.05)
 
-        csv_path = vna_tools.measure_and_save(znb, f"{mode}_F{i}")
+        csv_path = vna_tools.measure_and_save(znb, f"{mode}_F{i}", sub_dir=run_name)
         results = find_resonance.analyze(csv_path)
 
         if mode == "TM110":
@@ -114,7 +117,7 @@ def run_scan(atc, mode="TM110", sstep=10, nstep=10):
 
         pos1_mean, pos1_err, pos2_mean, pos2_err = read_position_stats(atc, n=10, interval=0.05)
 
-        csv_path = vna_tools.measure_and_save(znb, f"{mode}_B{i}")
+        csv_path = vna_tools.measure_and_save(znb, f"{mode}_B{i}", sub_dir=run_name)
         results = find_resonance.analyze(csv_path)
 
         if mode == "TM110":

@@ -132,7 +132,7 @@ def setup_vna(znb):
 
   print("VNA Error Check:", znb.query("SYSTem:ERRor?"))
 
-def measure_and_save(znb, suffix_arg="data"):
+def measure_and_save(znb, suffix_arg="data", sub_dir=None):
   """10回の測定ループを実行し、データをCSVに保存する"""
   znb.timeout = 60000
   
@@ -193,10 +193,12 @@ def measure_and_save(znb, suffix_arg="data"):
   date_dir = now_dt.strftime("%Y%m%d")
   
   output_dir = f"./data/{date_dir}"
+  if sub_dir:
+    output_dir = os.path.join(output_dir, sub_dir)
   raw_dir = f"{output_dir}/raw_data"
   
-  if not os.path.exists(output_dir): os.makedirs(output_dir)
-  if not os.path.exists(raw_dir): os.makedirs(raw_dir)
+  os.makedirs(output_dir, exist_ok=True)
+  os.makedirs(raw_dir, exist_ok=True)
 
   names = {1: "110_Wide", 2: "110_Narrow", 3: "210_Wide", 4: "210_Narrow"}
   
