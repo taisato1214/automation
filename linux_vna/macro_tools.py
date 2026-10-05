@@ -5,6 +5,7 @@ import time
 import Switchcontrol
 import vna_tools
 import find_resonance
+import statistics
 
 def read_position_stats(atc, n=10, interval=0.05):
   """axis 1 と axis 2 のポジションを n 回読み取って平均と標準偏差を返す。
@@ -144,11 +145,19 @@ def set_target_freq(atc, mode="TM110"):
 
   # 共鳴周波数を取得
   if mode == "TM110":
-    min_freq = vna_tools.find_min_freq(znb, 2, "Trc4", threshold=0.5)
+    min_freq, min_amp = vna_tools.find_min_freq(znb, 2, "Trc4", threshold=0.5)
     target_freq = 1.8974e9
   else:
-    min_freq = vna_tools.find_min_freq(znb, 4, "Trc8", threshold=0.5)
+    min_freq, min_amp = vna_tools.find_min_freq(znb, 4, "Trc8", threshold=0.5)
     target_freq = 2.565e9
+
+  # インタロック: 振幅が大きすぎる場合は画面外にピークがある可能性
+  if min_amp is not None and min_amp > 0.4:
+    print(f"[INTERLOCK] 振幅が大きすぎます (amp={min_amp:.4f} > 0.4)。"
+          f"画面外にピークがある可能性があります。処理を中断します。")
+    znb.close()
+    rm.close()
+    return
 
   if min_freq is None:
     print("共鳴周波数が見つかりませんでした。終了します。")
@@ -180,9 +189,9 @@ def set_target_freq(atc, mode="TM110"):
   # 移動後の共鳴周波数を確認
   print("\nChecking resonance frequency after move...")
   if mode == "TM110":
-    new_freq = vna_tools.find_min_freq(znb, 2, "Trc4", threshold=0.5)
+    new_freq, new_amp = vna_tools.find_min_freq(znb, 2, "Trc4", threshold=0.5)
   else:
-    new_freq = vna_tools.find_min_freq(znb, 4, "Trc8", threshold=0.5)
+    new_freq, new_amp = vna_tools.find_min_freq(znb, 4, "Trc8", threshold=0.5)
 
   if new_freq is not None:
     print(f"New resonance freq:  {new_freq / 1e6:.6f} MHz")

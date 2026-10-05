@@ -270,4 +270,4 @@ def find_min_freq(znb, ch, trc_name, threshold=0.3):
   freq_min, amp_min = min(candidates, key=lambda x: x[1])
   print(f"{GREEN}[find_s11_min_freq] Ch{ch} '{trc_name}': "
         f"最小振幅 = {amp_min:.6f} @ {freq_min/1e6:.4f} MHz{RESET}")
-  return freq_min
+  return freq_min, amp_min
