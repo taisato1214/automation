@@ -27,10 +27,10 @@ def set_target_freq(atc, mode="TM110"):
 
     # 共鳴周波数を取得
     if mode == "TM110":
-        min_freq = vna_tools.find_min_freq(znb, 2, "Trc4", threshold=0.5)
+        min_freq, _ = vna_tools.find_min_freq(znb, 2, "Trc4", threshold=0.5)
         target_freq = 1.8974e9
     else:
-        min_freq = vna_tools.find_min_freq(znb, 4, "Trc8", threshold=0.5)
+        min_freq, _ = vna_tools.find_min_freq(znb, 4, "Trc9", threshold=0.5)
         target_freq = 2.565e9
 
     if min_freq is None:
@@ -44,8 +44,8 @@ def set_target_freq(atc, mode="TM110"):
 
     # 必要ステップ数を計算
     delta_freq = target_freq - min_freq
-    slope = 3.1e-6  # step/Hz
-    step = int(round(slope * delta_freq)) # 四捨五入して整数型
+    freq_per_step = 3.2e5  # Hz/step
+    step = int(round(delta_freq / freq_per_step )) # 四捨五入して整数型
     print(f"\nFrequency difference: {delta_freq / 1e6:.4f} MHz")
     print(f"Estimated steps needed: {step}")
 
@@ -54,7 +54,7 @@ def set_target_freq(atc, mode="TM110"):
     print(f"\nInitial Piezo position: {pos} V")
     time.sleep(0.1)
 
-    atc.move_by_steps(1, step, 0.01)
+    atc.move_by_steps(1, -step, 0.01) # +stepで-freq (TM110)
     time.sleep(0.1)
 
     pos = atc.get_position(1)
@@ -63,9 +63,9 @@ def set_target_freq(atc, mode="TM110"):
     # 移動後の共鳴周波数を確認
     print("\nChecking resonance frequency after move...")
     if mode == "TM110":
-        new_freq = vna_tools.find_min_freq(znb, 2, "Trc4", threshold=0.5)
+        new_freq, _ = vna_tools.find_min_freq(znb, 2, "Trc4", threshold=0.5)
     else:
-        new_freq = vna_tools.find_min_freq(znb, 4, "Trc8", threshold=0.5)
+        new_freq, _ = vna_tools.find_min_freq(znb, 4, "Trc9", threshold=0.5)
 
     if new_freq is not None:
         print(f"New resonance freq:  {new_freq / 1e6:.6f} MHz")

@@ -64,14 +64,19 @@ def run_scan(atc, mode="TM110", sstep=10, nstep=10):
     os.makedirs(base_output_dir)
 
   # Run# の採番 (既存の Run フォルダの数を数えて次の番号にする)
-  existing_exps = [d for d in os.listdir(base_output_dir) if d.startswith("Run")]
-  exp_num = len(existing_exps) + 1
+  existing_runs = [
+    int(d[3:].split(".")[0])
+    for d in os.listdir(base_output_dir)
+    if d.startswith("Run") and d[3:].split(".")[0].isdigit()
+  ]
+  exp_num = max(existing_runs) + 1 if existing_runs else 1
   output_file = f"{base_output_dir}/Run{exp_num}.txt"
 
   print(f"Log will be saved to: {output_file}")
   
   with open(output_file, "w", encoding="utf-8") as f:
-    f.write("Step_Count,Position1_Mean,Position1_Err,Position2_Mean,Position2_Err,Resonance_f0_GHz\n")
+    f.write(f"# mode={mode}, sstep={sstep}, nstep={nstep}\n")
+    f.write("Direction,Step_Count,Mode,Sstep,Nstep,Position1_Mean,Position1_Err,Position2_Mean,Position2_Err,Resonance_f0_GHz\n")
 
     # 行き
     for i in range(1, nstep + 1):
@@ -91,17 +96,22 @@ def run_scan(atc, mode="TM110", sstep=10, nstep=10):
 
         f0 = result["f0"]
 
-        print(f"Forward Step: {i}, Pos1: {pos1_mean:.4f}±{pos1_err:.4f} V, Pos2: {pos2_mean:.4f}±{pos2_err:.4f} V, f0: {f0:.6f} GHz")
-        f.write(f"{i},{pos1_mean:.6f},{pos1_err:.6f},{pos2_mean:.6f},{pos2_err:.6f},{f0:.6f}\n")
+        print(f"Forward Step: {i}/{nstep}, Pos1: {pos1_mean:.4f}±{pos1_err:.4f} V, Pos2: {pos2_mean:.4f}±{pos2_err:.4f} V, f0: {f0:.6f} GHz")
+        f.write(f"F,{i},{mode},{sstep},{nstep},{pos1_mean:.6f},{pos1_err:.6f},{pos2_mean:.6f},{pos2_err:.6f},{f0:.6f}\n")
         f.flush()
 
 
-    # 帰り
+    # 帰り (折り返し地点 nstep と同じ場所からスタートして 1 まで戻る)
     for i in range(nstep, 0, -1):
-        print(f"\n--- Backward Scan {nstep-i+1}/{nstep} ---")
+        idx = nstep - i + 1
+        print(f"\n--- Backward Scan {idx}/{nstep} (Step {i}) ---")
 
-        atc.move_by_steps(1, -sstep, 0.01)   # -方向, TM110fre.は+
-        time.sleep(0.1)
+        # 最初の点 (i == nstep) は行きで到達した頂点なので動かさずに測定
+        # それ以降 (i < nstep) は 1ステップずつ戻してから測定
+        if i < nstep:
+            atc.move_by_steps(1, -sstep, 0.01)   # -方向, TM110fre.は+
+            time.sleep(0.1)
+
         pos1_mean, pos1_err, pos2_mean, pos2_err = read_position_stats(atc, n=10, interval=0.05)
 
         csv_path = vna_tools.measure_and_save(znb, f"{mode}_B{i}")
@@ -114,9 +124,14 @@ def run_scan(atc, mode="TM110", sstep=10, nstep=10):
 
         f0 = result["f0"]
 
-        print(f"Backward Step: {i}, Pos1: {pos1_mean:.4f}±{pos1_err:.4f} V, Pos2: {pos2_mean:.4f}±{pos2_err:.4f} V, f0: {f0:.6f} GHz")
-        f.write(f"{i},{pos1_mean:.6f},{pos1_err:.6f},{pos2_mean:.6f},{pos2_err:.6f},{f0:.6f}\n")
+        print(f"Backward Step: {i}/{nstep}, Pos1: {pos1_mean:.4f}±{pos1_err:.4f} V, Pos2: {pos2_mean:.4f}±{pos2_err:.4f} V, f0: {f0:.6f} GHz")
+        f.write(f"B,{i},{mode},{sstep},{nstep},{pos1_mean:.6f},{pos1_err:.6f},{pos2_mean:.6f},{pos2_err:.6f},{f0:.6f}\n")
         f.flush()
+
+    # 最後に初期位置 (0ステップ) まで戻す
+    print("\nReturning to initial position...")
+    atc.move_by_steps(1, -sstep, 0.01)
+    time.sleep(0.1)
 
   # 終了処理
   znb.close()

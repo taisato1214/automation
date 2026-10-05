@@ -1,0 +1,16 @@
+# 不要フォルダ
+sugahara/
+Software/
+switch/
+
+# 測定データ・画像
+data/
+figures/
+
+# PDF
+pylablib_anc350.pdf
+
+# 自動生成ファイル
+__pycache__/
+*.pyc
+.DS_Store
