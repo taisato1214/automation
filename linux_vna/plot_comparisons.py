@@ -1,24 +1,16 @@
 #!/usr/bin/env python3
-"""Plot comparisons of rows in Run4.txt.
-
-This script reads the Run4.txt CSV file located at
-`data/20260722/Run4.txt` and creates three scatter plots comparing:
-1. Step_Count vs Position
-2. Step_Count vs Resonance_f0_GHz
-3. Position vs Resonance_f0_GHz
-
-Each plot shows Position (x‑axis) vs Resonance_f0_GHz (y‑axis) for the two rows.
-The figures are saved as PNG files in the `figures/` directory.
-"""
+"""Plot Run#.txt data with Forward/Backward separation and error bars."""
 
 import csv
 import os
 import sys
-import matplotlib.pyplot as plt
 
-# Paths
+import matplotlib.pyplot as plt
+import numpy as np
+
+
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-# 引数があればそのファイル、なければデフォルトのRun4.txt
+
 if len(sys.argv) > 1:
     DATA_PATH = os.path.abspath(sys.argv[1])
 else:
@@ -27,84 +19,139 @@ else:
 FIG_DIR = os.path.join(BASE_DIR, "figures")
 os.makedirs(FIG_DIR, exist_ok=True)
 
-# Load data
-rows = []
-with open(DATA_PATH, newline="", encoding="utf-8") as f:
-    # '#' で始まるコメント行をスキップしてDictReaderに渡す
-    lines = [line for line in f if not line.strip().startswith("#")]
-    reader = csv.DictReader(lines)
-    for r in reader:
-        # Step_Count
-        step_count = int(r["Step_Count"])
-        # Sstep (新形式にあれば取得、なければ 1)
-        sstep = int(r["Sstep"]) if "Sstep" in r and r["Sstep"] else 1
-        total_steps = step_count * sstep
 
-        # Position (新形式: Position1_Mean、旧形式: Position)
-        if "Position1_Mean" in r:
-            pos = float(r["Position1_Mean"])
-            pos_err = float(r["Position1_Err"]) if "Position1_Err" in r else 0.0
-        elif "Position" in r:
-            pos = float(r["Position"])
-            pos_err = 0.0
-        else:
-            pos = 0.0
-            pos_err = 0.0
+def load_rows(path):
+    rows = []
 
-        # Resonance_f0_GHz
-        f0 = float(r["Resonance_f0_GHz"])
+    with open(path, newline="", encoding="utf-8-sig") as file:
+        lines = [line for line in file if line.strip() and not line.lstrip().startswith("#")]
+        reader = csv.DictReader(lines)
 
-        # Direction (F: Forward, B: Backward, 旧形式なら "F")
-        direction = r.get("Direction", "F").strip()
+        required = {"Step_Count", "Resonance_f0_GHz"}
+        missing = required - set(reader.fieldnames or [])
+        if missing:
+            raise RuntimeError(f"Missing columns: {', '.join(sorted(missing))}")
 
-        rows.append({
-            "Step_Count": step_count,
-            "Sstep": sstep,
-            "Total_Steps": total_steps,
-            "Position": pos,
-            "Position_Err": pos_err,
-            "Resonance_f0_GHz": f0,
-            "Direction": direction,
-        })
+        for row in reader:
+            step_count = int(row["Step_Count"])
+            sstep = float(row["Sstep"]) if row.get("Sstep") else 1.0
 
-if len(rows) == 0:
-    raise RuntimeError(f"{DATA_PATH} contains no data.")
+            if row.get("Position1_Mean"):
+                position = float(row["Position1_Mean"])
+                position_error = float(row.get("Position1_Err") or 0.0)
+            elif row.get("Position"):
+                position = float(row["Position"])
+                position_error = 0.0
+            else:
+                raise RuntimeError("Position1_Mean or Position column is missing")
 
-has_direction = any(r["Direction"] in ("F", "B") for r in rows) and len(set(r["Direction"] for r in rows)) > 1
+            rows.append(
+                {
+                    "Step_Count": step_count,
+                    "Sstep": sstep,
+                    "Total_Steps": step_count * sstep,
+                    "Position": position,
+                    "Position_Err": position_error,
+                    "Resonance_f0_GHz": float(row["Resonance_f0_GHz"]),
+                    "Direction": (row.get("Direction") or "F").strip().upper(),
+                }
+            )
 
-def plot_columns(x_key, y_key, label_x, label_y, filename):
-    plt.figure(figsize=(7, 5))
+    if not rows:
+        raise RuntimeError(f"{path} contains no data.")
+    return rows
+
+
+rows = load_rows(DATA_PATH)
+has_direction = {row["Direction"] for row in rows} >= {"F", "B"}
+
+
+def plot_columns(x_key, y_key, label_x, label_y, filename,
+                 x_error_key=None, y_error_key=None):
+    fig, ax = plt.subplots(figsize=(7, 5))
+
+    groups = [("F", "tab:blue", "o", "Forward (F)"),
+              ("B", "tab:orange", "s", "Backward (B)")]
+
     if has_direction:
-        f_rows = [r for r in rows if r["Direction"] == "F"]
-        b_rows = [r for r in rows if r["Direction"] == "B"]
-        if f_rows:
-            plt.scatter([r[x_key] for r in f_rows], [r[y_key] for r in f_rows], color="tab:blue", label="Forward (F)", alpha=0.8)
-        if b_rows:
-            plt.scatter([r[x_key] for r in b_rows], [r[y_key] for r in b_rows], color="tab:orange", marker="s", label="Backward (B)", alpha=0.8)
-        plt.legend()
+        plot_groups = groups
     else:
-        x = [row[x_key] for row in rows]
-        y = [row[y_key] for row in rows]
-        plt.scatter(x, y, color="tab:blue", alpha=0.8)
+        plot_groups = [(None, "tab:blue", "o", "Data")]
 
-    plt.title(f"{label_x} vs {label_y}")
-    plt.xlabel(label_x)
-    plt.ylabel(label_y)
-    plt.grid(True, which="both", ls="--", lw=0.5)
-    plt.tight_layout()
+    for direction, color, marker, label in plot_groups:
+        selected = (
+            [row for row in rows if row["Direction"] == direction]
+            if direction is not None else rows
+        )
+        if not selected:
+            continue
+
+        x = np.asarray([row[x_key] for row in selected], dtype=float)
+        y = np.asarray([row[y_key] for row in selected], dtype=float)
+
+        xerr = None
+        yerr = None
+        if x_error_key is not None:
+            xerr = np.asarray([row[x_error_key] for row in selected], dtype=float)
+        if y_error_key is not None:
+            yerr = np.asarray([row[y_error_key] for row in selected], dtype=float)
+
+        ax.errorbar(
+            x,
+            y,
+            xerr=xerr,
+            yerr=yerr,
+            fmt=marker,
+            color=color,
+            ecolor=color,
+            elinewidth=1,
+            capsize=3,
+            markersize=5,
+            alpha=0.85,
+            label=label,
+        )
+
+    ax.set_title(f"{label_x} vs {label_y}")
+    ax.set_xlabel(label_x)
+    ax.set_ylabel(label_y)
+    ax.grid(True, which="both", linestyle="--", linewidth=0.5)
+    ax.legend()
+    fig.tight_layout()
+
     save_path = os.path.join(FIG_DIR, filename)
-    plt.savefig(save_path)
-    plt.show()
+    fig.savefig(save_path, dpi=150)
+    return fig
 
-# Define column pairs to plot (Step Count横軸はsstepを掛けたTotal_Steps)
-column_pairs = [
-    ("Total_Steps", "Position", "Total Steps (Step_Count * sstep)", "Position (V or m)", "stepcount_vs_position.png"),
-    ("Total_Steps", "Resonance_f0_GHz", "Total Steps (Step_Count * sstep)", "Resonance (GHz)", "stepcount_vs_resonance.png"),
-    ("Position", "Resonance_f0_GHz", "Position (V or m)", "Resonance (GHz)", "position_vs_resonance.png"),
-]
 
-for x_key, y_key, label_x, label_y, fname in column_pairs:
-    plot_columns(x_key, y_key, label_x, label_y, fname)
+# Position1_Err をY方向のエラーとして表示
+plot_columns(
+    "Total_Steps",
+    "Position",
+    "Total Steps [Step Number]",
+    "Position [V]",
+    "stepcount_vs_position.png",
+    y_error_key="Position_Err",
+)
 
-print("Column comparison plots saved in", FIG_DIR)
+# 共振周波数のエラー列がないため、エラーバーなし
+plot_columns(
+    "Total_Steps",
+    "Resonance_f0_GHz",
+    "Total Steps [Step Number]",
+    "Resonance [GHz]",
+    "stepcount_vs_resonance.png",
+)
 
+# Position1_Err をX方向のエラーとして表示
+plot_columns(
+    "Position",
+    "Resonance_f0_GHz",
+    "Position [V]",
+    "Resonance [GHz]",
+    "position_vs_resonance.png",
+    x_error_key="Position_Err",
+)
+
+print(f"Column comparison plots saved in {FIG_DIR}")
+print("Close the plot windows to finish.")
+plt.show()
