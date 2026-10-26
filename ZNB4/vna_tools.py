@@ -1,3 +1,14 @@
+# vna_tools.py
+# Version: 1.3.0 (2026-10-26)
+#
+# 変更履歴
+#   1.3.0 (2026-10-26) measure_and_save のデフォルト保存先を ./data/YYYYMMDD/RunXXX/ に変更
+#   1.2.0 (2026-10-26) measure_and_save に run_num 引数を追加
+#                      (一連の動作で保存した複数ファイルを1つの Run 番号にまとめる)
+#   1.1.0 (2026-10-26) measure_and_save の出力ファイル名に通し Run 番号 (RunXXX_) を追加
+#                      (./data 以下全体で日付をまたいで連番)
+#   1.0.0              初版
+
 import pyvisa
 import math
 import csv
@@ -6,6 +17,7 @@ import statistics
 import datetime
 import sys
 import os
+import re
 
 # カラーコードの定義
 RED = "\033[91m"
@@ -206,11 +218,21 @@ def setup_vna(znb, scale="linear"):
 
   print("VNA Error Check:", znb.query("SYSTem:ERRor?"))
 
-def measure_and_save(znb, suffix_arg="data", output_dir=None):
+def next_run_number(data_root="./data"):
+  """data_root 以下 (日付フォルダ含む全サブフォルダ) の RunXXX_ で始まるファイルを調べ、
+  次の通し Run 番号を返す"""
+  nums = [int(m.group(1)) for _, _, files in os.walk(data_root) for f in files
+          if (m := re.match(r"Run(\d+)_", f))]
+  return max(nums, default=0) + 1
+
+def measure_and_save(znb, suffix_arg="data", output_dir=None, run_num=None):
   """10回の測定ループを実行し、データをCSVに保存する
 
   output_dir を指定するとそのディレクトリに保存する
-  (省略時は ./data/YYYYMMDD)
+  (省略時は ./data/YYYYMMDD/RunXXX)
+  run_num を指定するとその Run 番号でファイル名を付ける
+  (省略時は next_run_number() で新しい番号を振る。
+   スキャンなど一連の動作で複数回呼ぶときは同じ run_num を渡して1つの Run にまとめる)
   """
   znb.timeout = 60000
   
@@ -270,16 +292,20 @@ def measure_and_save(znb, suffix_arg="data", output_dir=None):
   now_str = now_dt.strftime("%H%M%S")
   date_dir = now_dt.strftime("%Y%m%d")
   
+  if run_num is None:
+    run_num = next_run_number()
+  run_str = f"Run{run_num:03d}"
+
   if output_dir is None:
-    output_dir = f"./data/{date_dir}"
+    output_dir = f"./data/{date_dir}/{run_str}"
   raw_dir = f"{output_dir}/raw_data"
   
   if not os.path.exists(output_dir): os.makedirs(output_dir)
   if not os.path.exists(raw_dir): os.makedirs(raw_dir)
 
   names = {1: "110_Wide", 2: "110_Narrow", 3: "210_Wide", 4: "210_Narrow"}
-  
-  summary_filename = f"{output_dir}/{now_str}_combined_{suffix_arg}.csv"
+
+  summary_filename = f"{output_dir}/{run_str}_{now_str}_combined_{suffix_arg}.csv"
   with open(summary_filename, 'w', newline='') as f:
     writer = csv.writer(f)
     header = ['Measurement_Mode', 'Frequency [Hz]']
@@ -299,7 +325,7 @@ def measure_and_save(znb, suffix_arg="data", output_dir=None):
         writer.writerow(row)
   print(f"Summary saved to: {summary_filename}")
 
-  raw_filename = f"{raw_dir}/{now_str}_raw_{suffix_arg}.csv"
+  raw_filename = f"{raw_dir}/{run_str}_{now_str}_raw_{suffix_arg}.csv"
   with open(raw_filename, 'w', newline='') as f:
     writer = csv.writer(f)
     writer.writerow(['Measurement_Mode', 'Measurement_Count', 'Frequency [Hz]', 'S11_Amp', 'S11_Phase', 'S21_Amp', 'S21_Phase'])
